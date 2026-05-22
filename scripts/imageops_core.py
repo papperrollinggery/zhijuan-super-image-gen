@@ -72,6 +72,13 @@ DIRECTION_CARDS: dict[str, dict[str, str]] = {
         "materials": "clean vector-like surfaces and simple dimensional forms",
         "composition": "large typography area, one symbolic image, minimal supporting copy",
     },
+    "fashion_editorial_cover": {
+        "tone": "tasteful fashion magazine cover, confident, polished, sunlit, non-explicit",
+        "palette": "warm sand, clean sky, ocean blue, natural skin tones, restrained cover accents",
+        "light": "golden coastal sunlight with soft fill, clean catchlights, natural skin shadow transitions",
+        "materials": "swimwear fabric texture, wind-shaped hair, sunscreen sheen, sand, water reflection, magazine paper grain",
+        "composition": "adult model as the cover hero, strong silhouette, masthead-safe top area, clean side space for short cover lines",
+    },
     "cinematic_scene": {
         "tone": "cinematic scene with atmosphere, narrative tension, and believable world detail",
         "palette": "coherent color grade, natural contrast, environmental depth",
@@ -150,6 +157,7 @@ def contains_any(text: str, terms: set[str]) -> bool:
 def infer_use_case(task: str) -> str:
     lower = task.lower()
     cases = [
+        ("magazine cover", {"magazine cover", "fashion cover", "editorial cover", "杂志封面"}),
         ("ui mockup", {"ui mockup", "dashboard", "app", "website", "界面", "网页", "应用"}),
         ("portrait", {"portrait", "headshot", "avatar", "肖像", "头像"}),
         ("poster", {"poster", "海报"}),
@@ -273,8 +281,10 @@ def build_hard_constraints(task: str, max_items: int = 4) -> list[str]:
     lower = task.lower()
     if any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"]):
         add(["do not use official logos or recreate official brand marks"])
-    if contains_any(task, NO_FAKE_CLAIMS_TERMS):
+    if contains_any(task, NO_FAKE_CLAIMS_TERMS) or any(phrase in lower for phrase in ["不要虚构", "no fake", "do not invent"]):
         add(["do not invent numbers, ratings, prices, awards, certifications, or user counts"])
+    if contains_any(task, {"swimwear", "swimsuit", "bikini", "泳装", "泳衣"}):
+        add(["adult model only", "tasteful non-explicit swimwear editorial, no nudity"])
     if contains_any(task, TEXT_HEAVY_TERMS):
         add(["keep visible text short, large, and legible"])
     if contains_any(task, {"screenshot", "真实截图", "ui screenshot", "官方界面"}):
@@ -325,11 +335,14 @@ def strip_constraints_from_subject(task: str) -> str:
     first = re.sub(r"生成一张|生成一个|create an?|make an?|generate an?", "", first, flags=re.I).strip(" ，,。.")
     if "Codex" in task and "AI coding agent" in task:
         return "Codex presented as an AI coding agent"
+    if contains_any(task, {"swimwear", "swimsuit", "bikini", "泳装", "泳衣"}) and contains_any(task, {"magazine", "cover", "杂志", "封面"}):
+        return "an adult fashion model in tasteful swimwear for a summer magazine cover"
     return first[:180] or text[:180]
 
 
 def parse_task_card(task: str, use_case: str, references: list[str]) -> TaskCard:
     deliverable = {
+        "magazine cover": "fashion magazine cover",
         "poster": "e-commerce hero poster",
         "ui mockup": "polished UI mockup image",
         "product image": "premium product image",
@@ -337,7 +350,7 @@ def parse_task_card(task: str, use_case: str, references: list[str]) -> TaskCard
         "scene design": "cinematic scene image",
         "thumbnail": "thumbnail image",
     }.get(use_case, "image")
-    wants_text = contains_any(task, TEXT_HEAVY_TERMS) or use_case in {"poster", "thumbnail"}
+    wants_text = contains_any(task, TEXT_HEAVY_TERMS) or use_case in {"magazine cover", "poster", "thumbnail"}
     hard_constraints = build_hard_constraints(task)
     factual_risk = []
     if contains_any(task, NO_FAKE_CLAIMS_TERMS):
@@ -355,6 +368,8 @@ def parse_task_card(task: str, use_case: str, references: list[str]) -> TaskCard
 
 
 def choose_direction_family(task: str, card: TaskCard) -> str:
+    if card.use_case == "magazine cover" or contains_any(task, {"fashion", "editorial", "swimwear", "泳装", "时尚", "模特"}):
+        return "fashion_editorial_cover"
     if card.use_case == "poster" and contains_any(task, {"codex", "developer", "ai coding agent", "软件", "开发者", "工具"}):
         return "editorial_workplace_realism"
     if card.use_case == "poster":
@@ -374,6 +389,9 @@ def build_visual_plan(task: str, card: TaskCard) -> VisualPlan:
     if "Codex" in task or "codex" in task.lower():
         concept = "a believable high-end developer workspace at the moment of active problem solving, where Codex feels present through the workflow rather than as a generic sci-fi trophy"
         scene = "a luminous coding interface, terminal output, structured code panels, and subtle signs of reasoning and iteration inside a real workspace"
+    elif family == "fashion_editorial_cover":
+        concept = "an adult model in tasteful swimwear photographed as a premium fashion magazine cover, confident and non-explicit"
+        scene = "a summer coastline with ocean air, warm sand, natural movement, and clean cover-layout negative space"
     elif card.use_case == "product image":
         concept = f"{card.hero_subject} treated as the clear product hero, physically grounded and desirable"
         scene = "a controlled commercial setup with enough environment to show scale and use"
