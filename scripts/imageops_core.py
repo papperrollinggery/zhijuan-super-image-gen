@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import re
 import textwrap
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -42,85 +43,68 @@ SCENE_TERMS = {"room", "street", "city", "landscape", "architecture", "interior"
 TEXT_HEAVY_TERMS = {"text", "typography", "copy", "headline", "poster", "banner", "label", "logo", "文字", "排版", "标题", "海报", "横幅", "标签", "卖点"}
 NO_FAKE_CLAIMS_TERMS = {"ecommerce", "poster", "ad", "landing", "marketing", "电商", "海报", "广告", "营销", "主图", "卖点"}
 
-TASTE_PRESETS: dict[str, dict[str, Any]] = {
-    "premium_saas_poster": {
-        "triggers": {"codex", "developer", "saas", "software", "app", "ai agent", "电商", "海报", "开发者", "软件", "工具", "主图"},
-        "visual_thesis": "premium SaaS commerce poster staged like a high-end product photograph: abstract AI command center as the hero object, restrained dark interface surfaces, precise developer-tool credibility",
-        "composition": "vertical 4:5 poster, large headline zone, centered 3D command-center hero on a black satin pedestal, three short floating feature chips, clean bottom trust strip, generous negative space",
-        "lighting": "large softbox key light, cool rim highlights, subtle volumetric screen glow, controlled glass reflections, realistic contact shadows, no harsh neon wash",
-        "materials": "smoked glass panels, anodized aluminum bevels, frosted acrylic cards, OLED screen glow, satin black pedestal, micro-scratches, fine dust, crisp shadow gradients",
-        "craft": "strong foreground-background separation, readable focal hierarchy, tactile interface cards, visible bevels and edge highlights, micro-detail around the hero object, quiet premium background",
-        "text_strategy": "short readable title and 3-4 short feature labels only; no fabricated metrics, ratings, prices, certifications, awards, or user counts",
-        "positive": ["clean readable typography", "stable commercial layout", "premium developer-tool visual language", "photorealistic product staging", "short factual copy"],
-        "avoid": ["official logo recreation", "invented numbers", "tiny unreadable text", "cluttered dashboard", "flat vector look"],
+DIRECTION_CARDS: dict[str, dict[str, str]] = {
+    "commercial_tech_still_life": {
+        "tone": "premium technology campaign, physically grounded, expensive but not sterile",
+        "palette": "deep charcoal, graphite, glass highlights, restrained blue-green accents",
+        "light": "soft directional studio light, cool edge rim, screen glow, crisp contact shadows",
+        "materials": "brushed aluminum, smoked glass, matte plastic, subtle dust, slight wear, believable reflections",
+        "composition": "one dominant hero subject, clear negative space for a short headline, readable crop",
     },
-    "cinematic_realism": {
-        "triggers": {"cinematic", "film", "realistic", "photo", "电影", "真实", "照片", "写实"},
-        "visual_thesis": "cinematic realistic image with natural atmosphere, tactile materials, and believable imperfections",
-        "composition": "single clear focal subject, cinematic framing, layered depth from foreground to background",
-        "lighting": "motivated directional light, soft bounce, controlled highlights, consistent shadows",
-        "materials": "skin, fabric, glass, metal, dust, moisture, and surface wear rendered with natural texture",
-        "craft": "subtle lens depth, environmental detail that supports the subject, no decorative overloading",
-        "text_strategy": "avoid text unless explicitly requested",
-        "positive": ["photographic realism", "natural material texture", "coherent light direction", "believable depth"],
-        "avoid": ["plastic skin", "over-sharpening", "AI gloss", "flat lighting"],
+    "editorial_workplace_realism": {
+        "tone": "credible editorial photo of real work happening, polished but lived-in",
+        "palette": "dark workstation neutrals, natural screen light, restrained accent color",
+        "light": "motivated desk light, screen glow, soft falloff, real shadow depth",
+        "materials": "keyboard texture, desk surface, fingerprints, glass, cables, notebooks, tool marks",
+        "composition": "workspace context with a clear focal moment, foreground depth, non-random props",
     },
-    "luxury_product_photo": {
-        "triggers": {"product", "packaging", "bottle", "device", "shoe", "产品", "包装", "瓶", "设备", "手机", "鞋"},
-        "visual_thesis": "luxury product photograph with precise geometry, tactile surfaces, and high-end commercial restraint",
-        "composition": "hero product centered or slightly off-center, clean horizon, controlled props, safe crop margins",
-        "lighting": "large softbox reflection, rim light for silhouette, subtle contact shadow",
-        "materials": "accurate product geometry, crisp edges, believable metal, glass, plastic, paper, or fabric textures",
-        "craft": "surface detail visible without noise, background quiet enough to make the product expensive",
-        "text_strategy": "only include label text if provided; no fake certifications or claims",
-        "positive": ["premium product hero", "accurate geometry", "clean edges", "tactile material detail"],
-        "avoid": ["warped product shape", "incorrect logo", "busy props", "cheap stock-photo look"],
+    "ui_object_hybrid": {
+        "tone": "interface becomes a tangible product object, clean and dimensional",
+        "palette": "dark UI surfaces, subtle glow, restrained product-photography accents",
+        "light": "studio key light plus interface glow, controlled reflections, visible bevels",
+        "materials": "glass cards, edge-lit panels, thin metal frames, soft shadows",
+        "composition": "interface hero with supporting panels, spatial hierarchy instead of dense dashboard clutter",
     },
-    "editorial_portrait": {
-        "triggers": {"portrait", "headshot", "person", "fashion", "肖像", "头像", "人物", "人像", "时尚"},
-        "visual_thesis": "editorial portrait with character presence, skin realism, and controlled fashion-magazine lighting",
-        "composition": "face and silhouette as the primary read, clean pose language, uncluttered background",
-        "lighting": "large soft key light, gentle fill, catchlights in the eyes, natural skin shadow transitions",
-        "materials": "real skin pores, fabric weave, hair strands, subtle makeup or styling when appropriate",
-        "craft": "identity-preserving facial structure, natural hands if visible, clear separation from background",
-        "text_strategy": "no text unless explicitly requested",
-        "positive": ["natural skin texture", "consistent facial structure", "editorial lighting", "clean silhouette"],
-        "avoid": ["waxy skin", "distorted face", "extra fingers", "uncanny expression"],
+    "graphic_poster_minimal": {
+        "tone": "sharp graphic campaign poster, minimal but not empty",
+        "palette": "strong contrast, one accent family, disciplined whitespace",
+        "light": "flat graphic clarity with subtle dimensional highlight only where useful",
+        "materials": "clean vector-like surfaces and simple dimensional forms",
+        "composition": "large typography area, one symbolic image, minimal supporting copy",
     },
-    "clean_ui_mockup": {
-        "triggers": {"ui", "dashboard", "mockup", "interface", "website", "app", "界面", "仪表盘", "网页", "应用"},
-        "visual_thesis": "clean UI mockup with believable product hierarchy and polished interface materials",
-        "composition": "straight-on or slight perspective device/interface hero, clear spacing, organized panels, readable large labels",
-        "lighting": "soft studio glow, restrained reflections, subtle depth around cards and controls",
-        "materials": "crisp glass panels, matte surfaces, fine borders, realistic shadows, no ornamental clutter",
-        "craft": "stable grid, consistent spacing, recognizable controls, no nested-card mess",
-        "text_strategy": "use short placeholder labels only; avoid paragraphs and small unreadable text",
-        "positive": ["stable grid layout", "clear hierarchy", "readable large labels", "professional UI spacing"],
-        "avoid": ["broken layout", "misaligned elements", "fake dense spreadsheet", "unreadable microcopy"],
-    },
-    "anime_key_visual": {
-        "triggers": {"anime", "manga", "key visual", "二次元", "动漫", "漫画", "角色"},
-        "visual_thesis": "anime key visual with strong silhouette, expressive pose, and polished production-art finish",
-        "composition": "single hero character or group hierarchy, dynamic but readable pose, clean background shape language",
-        "lighting": "stylized rim light, controlled color contrast, readable face and costume details",
-        "materials": "clean linework, controlled gradients, crisp outfit detail, expressive hair and eye design",
-        "craft": "character identity stays stable, costume anchors remain clear, background supports the pose",
-        "text_strategy": "no text unless explicitly requested",
-        "positive": ["clean linework", "expressive silhouette", "polished anime key art", "controlled color palette"],
-        "avoid": ["extra limbs", "muddy linework", "overcrowded effects", "identity drift"],
-    },
-    "concept_art": {
-        "triggers": {"concept art", "worldbuilding", "environment", "scene", "概念图", "设定", "世界观", "场景"},
-        "visual_thesis": "concept art with strong atmosphere, readable design language, and production-ready visual logic",
-        "composition": "clear scale cues, one main focal structure or subject, layered environment depth",
-        "lighting": "atmospheric light with clear source, volumetric depth when useful, coherent color temperature",
-        "materials": "environmental surfaces with age, weathering, construction logic, and believable texture",
-        "craft": "every detail supports world logic and silhouette readability",
-        "text_strategy": "avoid text unless explicitly requested",
-        "positive": ["atmospheric depth", "believable environment texture", "strong silhouette", "production concept finish"],
-        "avoid": ["random kitbash detail", "muddy focal point", "flat atmosphere", "overcrowded composition"],
+    "cinematic_scene": {
+        "tone": "cinematic scene with atmosphere, narrative tension, and believable world detail",
+        "palette": "coherent color grade, natural contrast, environmental depth",
+        "light": "motivated directional light, bounce, rim, consistent shadows",
+        "materials": "surfaces with texture, age, moisture, dust, fabric, skin, metal, or glass as appropriate",
+        "composition": "one readable focal subject with layered foreground, middle ground, background",
     },
 }
+
+
+@dataclass
+class TaskCard:
+    use_case: str
+    deliverable: str
+    hero_subject: str
+    aspect_ratio: str
+    wants_text: bool
+    hard_constraints: list[str]
+    factual_risk: list[str]
+    references: list[str]
+
+
+@dataclass
+class VisualPlan:
+    direction_family: str
+    concept: str
+    scene: str
+    composition: str
+    lighting: str
+    materials: str
+    text_rule: str
+    hard_constraints: list[str]
+    human_checklist: list[str]
 
 
 def skill_root() -> Path:
@@ -181,35 +165,7 @@ def infer_use_case(task: str) -> str:
     return "image generation"
 
 
-def score_terms(task: str, terms: set[str]) -> int:
-    return sum(1 for term in terms if contains_any(task, {term}))
-
-
-def select_taste_preset(task: str, use_case: str) -> str:
-    scores: dict[str, int] = {}
-    for name, preset in TASTE_PRESETS.items():
-        score = score_terms(task, set(preset["triggers"]))
-        if use_case in {"poster", "ui mockup", "product image", "portrait", "character design", "scene design"}:
-            if use_case == "poster" and name == "premium_saas_poster":
-                score += 3
-            elif use_case == "ui mockup" and name == "clean_ui_mockup":
-                score += 3
-            elif use_case == "product image" and name == "luxury_product_photo":
-                score += 3
-            elif use_case == "portrait" and name == "editorial_portrait":
-                score += 3
-            elif use_case == "character design" and name == "anime_key_visual":
-                score += 2
-            elif use_case == "scene design" and name == "concept_art":
-                score += 3
-        scores[name] = score
-    best = max(scores, key=scores.get)
-    if scores[best] <= 0:
-        return "cinematic_realism"
-    return best
-
-
-def detect_risk_flags(task: str, use_case: str, preset_name: str) -> list[str]:
+def detect_risk_flags(task: str, use_case: str, direction_family: str) -> list[str]:
     flags = []
     lower = task.lower()
     no_official_mark = any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"])
@@ -222,55 +178,9 @@ def detect_risk_flags(task: str, use_case: str, preset_name: str) -> list[str]:
         flags.append("identity_drift_risk")
     if use_case in {"ui mockup", "poster"}:
         flags.append("layout_precision_risk")
-    if preset_name in {"luxury_product_photo", "clean_ui_mockup"}:
+    if direction_family in {"commercial_tech_still_life", "ui_object_hybrid"}:
         flags.append("geometry_risk")
     return flags
-
-
-def craft_expansion(task: str, brief: dict[str, Any]) -> dict[str, Any]:
-    preset_name = select_taste_preset(task, brief["use_case"])
-    preset = TASTE_PRESETS[preset_name]
-    risk_flags = detect_risk_flags(task, brief["use_case"], preset_name)
-    aspect_ratio = "4:5" if brief["use_case"] in {"poster", "portrait", "product image"} else "16:9" if brief["use_case"] in {"scene design", "ui mockup"} else "1:1"
-    if "9:16" in task or "竖版" in task:
-        aspect_ratio = "4:5" if "4:5" in task else "9:16"
-    if "1:1" in task or "方图" in task:
-        aspect_ratio = "1:1"
-    if "16:9" in task or "横版" in task:
-        aspect_ratio = "16:9"
-    return {
-        "taste_preset": preset_name,
-        "visual_thesis": preset["visual_thesis"],
-        "aspect_ratio": aspect_ratio,
-        "composition": preset["composition"],
-        "lighting": preset["lighting"],
-        "materials": preset["materials"],
-        "craft": preset["craft"],
-        "text_strategy": preset["text_strategy"],
-        "positive_constraints": preset["positive"],
-        "preset_avoid": preset["avoid"],
-        "risk_flags": risk_flags,
-        "human_checklist": human_checklist_for(risk_flags, preset_name),
-    }
-
-
-def human_checklist_for(risk_flags: list[str], preset_name: str) -> list[str]:
-    checklist = [
-        "Is the main subject immediately clear?",
-        "Does the image feel tactile rather than flat or plastic?",
-        "Is the lighting direction consistent?",
-    ]
-    if "text_risk" in risk_flags:
-        checklist.append("Is every visible word short, readable, and intentional?")
-    if "fake_claims_risk" in risk_flags:
-        checklist.append("Did the image avoid invented numbers, ratings, prices, certifications, awards, and user counts?")
-    if "layout_precision_risk" in risk_flags:
-        checklist.append("Does the layout read cleanly at thumbnail size?")
-    if "identity_drift_risk" in risk_flags:
-        checklist.append("Does the identity or style anchor still match the reference or description?")
-    if preset_name == "luxury_product_photo":
-        checklist.append("Is the product geometry clean and believable?")
-    return checklist
 
 
 def parse_labeled_sections(task: str) -> dict[str, str]:
@@ -352,7 +262,7 @@ def analyze_feasibility(task: str, references: list[str] | None = None) -> dict[
     }
 
 
-def build_negative(task: str, max_items: int = 9) -> list[str]:
+def build_hard_constraints(task: str, max_items: int = 4) -> list[str]:
     items: list[str] = []
 
     def add(values: list[str]) -> None:
@@ -360,17 +270,20 @@ def build_negative(task: str, max_items: int = 9) -> list[str]:
             if value not in items:
                 items.append(value)
 
-    if contains_any(task, PERSON_TERMS):
-        add(["distorted face", "identity drift", "extra fingers", "broken hands", "duplicate limbs", "bad anatomy", "plastic skin"])
-    if contains_any(task, PRODUCT_TERMS):
-        add(["warped product geometry", "incorrect logo", "malformed text", "waxy texture", "over-sharpening"])
-    if contains_any(task, UI_TERMS):
-        add(["unreadable text", "broken layout", "inconsistent spacing", "misaligned interface elements"])
-    if contains_any(task, SCENE_TERMS):
-        add(["warped perspective", "noisy background", "inconsistent lighting"])
+    lower = task.lower()
+    if any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"]):
+        add(["do not use official logos or recreate official brand marks"])
     if contains_any(task, NO_FAKE_CLAIMS_TERMS):
-        add(["invented metrics", "fake certifications", "fake ratings", "fake prices"])
+        add(["do not invent numbers, ratings, prices, awards, certifications, or user counts"])
+    if contains_any(task, TEXT_HEAVY_TERMS):
+        add(["keep visible text short, large, and legible"])
+    if contains_any(task, {"screenshot", "真实截图", "ui screenshot", "官方界面"}):
+        add(["do not fake an official product screenshot"])
     return items[:max_items]
+
+
+def build_negative(task: str, max_items: int = 4) -> list[str]:
+    return build_hard_constraints(task, max_items=max_items)
 
 
 def list_from_text(value: str | list[str] | None) -> list[str]:
@@ -382,17 +295,132 @@ def list_from_text(value: str | list[str] | None) -> list[str]:
     return [part.strip() for part in parts if part.strip()]
 
 
+def infer_aspect_ratio(task: str, use_case: str) -> str:
+    lower = task.lower()
+    if "4:5" in lower:
+        return "4:5"
+    if "9:16" in lower or "竖版" in task:
+        return "9:16"
+    if "16:9" in lower or "横版" in task:
+        return "16:9"
+    if "1:1" in lower or "方图" in task:
+        return "1:1"
+    if use_case in {"poster", "portrait", "product image"}:
+        return "4:5"
+    if use_case in {"ui mockup", "scene design"}:
+        return "16:9"
+    return "1:1"
+
+
+def strip_constraints_from_subject(task: str) -> str:
+    text = re.sub(r"\s+", " ", task).strip()
+    splitters = ["。", ". ", "；", ";"]
+    first = text
+    for splitter in splitters:
+        if splitter in first:
+            first = first.split(splitter)[0].strip()
+            break
+    for phrase in ["不要官方 logo", "不要官方logo", "不要虚构数字", "不使用官方 logo", "不要使用官方 logo"]:
+        first = first.replace(phrase, "").strip(" ，,。.")
+    first = re.sub(r"生成一张|生成一个|create an?|make an?|generate an?", "", first, flags=re.I).strip(" ，,。.")
+    if "Codex" in task and "AI coding agent" in task:
+        return "Codex presented as an AI coding agent"
+    return first[:180] or text[:180]
+
+
+def parse_task_card(task: str, use_case: str, references: list[str]) -> TaskCard:
+    deliverable = {
+        "poster": "e-commerce hero poster",
+        "ui mockup": "polished UI mockup image",
+        "product image": "premium product image",
+        "portrait": "editorial portrait",
+        "scene design": "cinematic scene image",
+        "thumbnail": "thumbnail image",
+    }.get(use_case, "image")
+    wants_text = contains_any(task, TEXT_HEAVY_TERMS) or use_case in {"poster", "thumbnail"}
+    hard_constraints = build_hard_constraints(task)
+    factual_risk = []
+    if contains_any(task, NO_FAKE_CLAIMS_TERMS):
+        factual_risk.extend(["invented_metrics", "fake_badges", "fake_claims"])
+    return TaskCard(
+        use_case=use_case,
+        deliverable=deliverable,
+        hero_subject=strip_constraints_from_subject(task),
+        aspect_ratio=infer_aspect_ratio(task, use_case),
+        wants_text=wants_text,
+        hard_constraints=hard_constraints,
+        factual_risk=factual_risk,
+        references=references,
+    )
+
+
+def choose_direction_family(task: str, card: TaskCard) -> str:
+    if card.use_case == "poster" and contains_any(task, {"codex", "developer", "ai coding agent", "软件", "开发者", "工具"}):
+        return "editorial_workplace_realism"
+    if card.use_case == "poster":
+        return "commercial_tech_still_life"
+    if card.use_case == "ui mockup":
+        return "ui_object_hybrid"
+    if card.use_case in {"product image", "thumbnail"}:
+        return "commercial_tech_still_life"
+    if contains_any(task, {"minimal", "极简"}):
+        return "graphic_poster_minimal"
+    return "cinematic_scene"
+
+
+def build_visual_plan(task: str, card: TaskCard) -> VisualPlan:
+    family = choose_direction_family(task, card)
+    direction = DIRECTION_CARDS[family]
+    if "Codex" in task or "codex" in task.lower():
+        concept = "a believable high-end developer workspace at the moment of active problem solving, where Codex feels present through the workflow rather than as a generic sci-fi trophy"
+        scene = "a luminous coding interface, terminal output, structured code panels, and subtle signs of reasoning and iteration inside a real workspace"
+    elif card.use_case == "product image":
+        concept = f"{card.hero_subject} treated as the clear product hero, physically grounded and desirable"
+        scene = "a controlled commercial setup with enough environment to show scale and use"
+    elif card.use_case == "ui mockup":
+        concept = f"{card.hero_subject} presented as a tangible interface experience with clean product hierarchy"
+        scene = "a focused interface scene with spatial depth, readable primary panels, and restrained supporting details"
+    else:
+        concept = f"{card.hero_subject} with one clear visual idea, not a generic template"
+        scene = "a coherent scene that makes the subject feel physically present and visually motivated"
+    text_rule = "If any text appears, keep it very short, large, and fully legible."
+    if not card.wants_text:
+        text_rule = "Avoid text unless it is explicitly necessary."
+    checklist = [
+        "Main subject is clear in the first second.",
+        "Light direction, contact shadows, and screen glow feel coherent.",
+        "Materials feel physical, not flat or generic.",
+    ]
+    if card.wants_text:
+        checklist.append("Visible text is short, readable, and not fabricated.")
+    if card.aspect_ratio in {"4:5", "9:16"}:
+        checklist.append("Composition still reads at mobile thumbnail size.")
+    return VisualPlan(
+        direction_family=family,
+        concept=concept,
+        scene=scene,
+        composition=f"{direction['composition']}; keep one dominant focal subject and enough negative space for the requested {card.aspect_ratio} crop",
+        lighting=direction["light"],
+        materials=direction["materials"],
+        text_rule=text_rule,
+        hard_constraints=card.hard_constraints,
+        human_checklist=checklist,
+    )
+
+
 def build_brief(task: str, status: str, references: list[str] | None = None) -> dict[str, Any]:
     references = references or []
     labels = parse_labeled_sections(task)
     use_case = labels.get("use_case") or infer_use_case(task)
     style = labels.get("style") or infer_style(task)
+    task_card = parse_task_card(task, use_case, references)
+    visual_plan = build_visual_plan(task, task_card)
     brief = {
         "task_id": slugify(task, limit=36),
         "status": status,
         "use_case": use_case,
         "scene": labels.get("scene") or infer_scene(task),
-        "subject": labels.get("subject") or infer_subject(task),
+        "subject": labels.get("subject") or task_card.hero_subject,
         "camera": labels.get("camera") or infer_camera(task),
         "lighting": labels.get("lighting") or infer_lighting(task),
         "materials": labels.get("materials") or infer_materials(task),
@@ -400,10 +428,25 @@ def build_brief(task: str, status: str, references: list[str] | None = None) -> 
         "style": style,
         "preserve": list_from_text(labels.get("preserve")) or infer_preserve(task, references),
         "constraints": list_from_text(labels.get("constraints")),
-        "negative": build_negative(task),
+        "negative": task_card.hard_constraints,
         "references": references,
+        "task_card": asdict(task_card),
+        "visual_plan": asdict(visual_plan),
     }
-    brief["craft_expansion"] = craft_expansion(task, brief)
+    brief["craft_expansion"] = {
+        "taste_preset": visual_plan.direction_family,
+        "visual_thesis": visual_plan.concept,
+        "aspect_ratio": task_card.aspect_ratio,
+        "composition": visual_plan.composition,
+        "lighting": visual_plan.lighting,
+        "materials": visual_plan.materials,
+        "craft": visual_plan.scene,
+        "text_strategy": visual_plan.text_rule,
+        "positive_constraints": [],
+        "preset_avoid": [],
+        "risk_flags": detect_risk_flags(task, use_case, visual_plan.direction_family),
+        "human_checklist": visual_plan.human_checklist,
+    }
     return brief
 
 
@@ -502,7 +545,7 @@ def compress_prompt(text: str, max_words: int = 300) -> str:
     seen_lines: set[str] = set()
     for line in lines:
         label, sep, body = line.partition(":")
-        if sep:
+        if sep and re.match(r"^[A-Za-z][A-Za-z ]{1,24}$", label.strip()):
             phrases = [p.strip() for p in re.split(r",|;", body) if p.strip()]
             deduped = []
             seen_phrases = set()
@@ -524,59 +567,43 @@ def compress_prompt(text: str, max_words: int = 300) -> str:
 
 
 def make_codex_prompt(brief: dict[str, Any]) -> str:
-    craft = brief.get("craft_expansion") or {}
-    avoid = list(dict.fromkeys((craft.get("preset_avoid") or []) + (brief.get("negative") or [])))[:8]
-    positives = ", ".join((craft.get("positive_constraints") or [])[:5])
-    sections = [
-        ("Subject", brief.get("subject")),
-        ("Visual direction", craft.get("visual_thesis") or brief.get("style")),
-        ("Aspect ratio", craft.get("aspect_ratio")),
-        ("Composition", craft.get("composition") or brief.get("composition")),
-        ("Light and texture", f"{craft.get('lighting') or brief.get('lighting')}; {craft.get('materials') or brief.get('materials')}; {craft.get('craft') or ''}".strip("; ")),
-        ("Camera", brief.get("camera")),
-        ("Positive constraints", positives),
-        ("Text handling", craft.get("text_strategy")),
-        ("Preserve", "; ".join(brief.get("preserve") or [])),
-        ("Avoid", ", ".join(avoid)),
+    card = brief.get("task_card") or {}
+    plan = brief.get("visual_plan") or {}
+    text_rule = plan.get("text_rule", "Keep any text short and readable.")
+    constraints = plan.get("hard_constraints") or brief.get("negative") or []
+    constraints = [
+        item for item in constraints
+        if not (item == "keep visible text short, large, and legible" and "legible" in text_rule.lower())
     ]
-    text = "\n".join(f"{label}: {value}" for label, value in sections if value)
-    return compress_prompt(text, max_words=300)
+    constraint_sentence = f" Constraints: {'; '.join(constraints)}." if constraints else ""
+    prompt = f"""\
+Create a {card.get("aspect_ratio", "well-composed")} {card.get("deliverable", brief.get("use_case", "image"))}.
+Show {card.get("hero_subject", brief.get("subject"))} through {plan.get("concept", "one clear visual idea")}, with {plan.get("scene", brief.get("scene"))}.
+Compose it with {plan.get("composition", brief.get("composition"))}.
+Use {plan.get("lighting", brief.get("lighting"))}, with tactile materials such as {plan.get("materials", brief.get("materials") or "believable physical surfaces")} so the image feels spatially real rather than like a flat template.
+{text_rule}{constraint_sentence}
+"""
+    return compress_prompt(prompt, max_words=230)
 
 
 def make_chatgpt_prompt(brief: dict[str, Any]) -> str:
-    craft = brief.get("craft_expansion") or {}
-    preserve = "; ".join(brief.get("preserve") or [])
-    constraints = "; ".join(brief.get("constraints") or [])
-    negative = ", ".join(list(dict.fromkeys((craft.get("preset_avoid") or []) + (brief.get("negative") or [])))[:10])
-    materials = craft.get("materials") or brief.get("materials") or "Use believable surfaces, natural texture, and material behavior appropriate to the subject."
-    constraints = constraints or "Do not add unrelated props, logos, text, characters, or style shifts."
-    preserve = preserve or "Preserve the requested subject, silhouette, visual hierarchy, and stated style anchors."
-    visual_thesis = craft.get("visual_thesis") or brief.get("style")
-    composition = craft.get("composition") or brief.get("composition")
-    lighting = craft.get("lighting") or brief.get("lighting")
-    text_strategy = craft.get("text_strategy") or "Include text only when requested; keep it short and readable."
-
-    text = f"""\
-FINAL_RENDER_HANDOFF
-Use case: Create a final-quality image for {brief.get("use_case")}.
-Visual thesis: {visual_thesis}
-Aspect ratio: {craft.get("aspect_ratio") or "auto"}
-Scene: {brief.get("scene")} Extend only the environmental details that support the subject and keep the background coherent, readable, and visually quiet where the subject needs attention.
-Subject: {brief.get("subject")} Keep the core subject recognizable and stable across the whole image. Do not reinterpret the subject into a different character, product, interface, or visual category.
-Camera: {brief.get("camera")}. Use a natural lens feel and avoid distracting perspective tricks unless they are explicitly requested.
-Lighting: {lighting}. Keep light direction consistent across the subject, background, shadows, and reflective surfaces.
-Materials: {materials}
-Composition: {composition}. Keep one clear focal priority, strong silhouette readability, and clean separation between subject and environment.
-Style: {brief.get("style")}. Apply the style consistently without stacking unrelated aesthetics.
-Craft: {craft.get("craft") or "Use tactile visual details, controlled contrast, and restrained background complexity."}
-Preserve: {preserve}
-Reference handling: If references are available, match enduring identity, silhouette, proportions, palette, outfit anchors, product geometry, or interface language. Ignore accidental reference artifacts such as compression noise, bad cropping, watermark fragments, or lighting mistakes unless the user explicitly asks to keep them.
-Detail level: Add specific visual detail where it clarifies the subject, materials, or environment. Keep micro-detail subordinate to the main read, and avoid decorative clutter that competes with the focal subject.
-Text handling: {text_strategy}
-Constraints: {constraints}
-Avoid: {negative}
-"""
-    return compress_prompt(text, max_words=700)
+    card = brief.get("task_card") or {}
+    plan = brief.get("visual_plan") or {}
+    text_rule = plan.get("text_rule", "")
+    constraints = plan.get("hard_constraints") or brief.get("negative") or []
+    constraints = [
+        item for item in constraints
+        if not (item == "keep visible text short, large, and legible" and "legible" in text_rule.lower())
+    ]
+    constraint_text = f" Avoid: {', '.join(constraints)}." if constraints else ""
+    text = (
+        f"Make a polished {card.get('aspect_ratio', '')} image for {card.get('deliverable', brief.get('use_case', 'image'))}. "
+        f"It should show {card.get('hero_subject', brief.get('subject'))} in {plan.get('scene', brief.get('scene'))}, "
+        f"with {plan.get('lighting', brief.get('lighting'))}, tactile materials like {plan.get('materials', brief.get('materials') or 'believable surfaces')}, "
+        f"and a composition built around {plan.get('composition', brief.get('composition'))}. "
+        f"{text_rule}{constraint_text}"
+    )
+    return compress_prompt("FINAL_RENDER_HANDOFF\n" + text, max_words=220)
 
 
 def make_identity_lock(task: str, references: list[str]) -> dict[str, Any] | None:

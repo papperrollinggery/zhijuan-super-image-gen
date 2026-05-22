@@ -10,7 +10,7 @@ The image director must:
 2. Extract only relevant visual context.
 3. Build a structured image brief.
 4. Build preservation rules when needed.
-5. Build compact negative constraints.
+5. Build compact hard constraints.
 6. Generate Codex draft prompt.
 7. Generate ChatGPT final render prompt.
 8. Save files under `imageops/runs/`.
@@ -18,6 +18,6 @@ The image director must:
 
 Do not paste long prompt bodies into the main session unless explicitly requested.
 
-Use Codex `image_gen` for drafts and exploration.
+Use Codex `image_gen` for the default single render.
 
-Use ChatGPT Images 2.0 handoff prompts for final rendering when final visual quality matters.
+Use ChatGPT Images 2.0 handoff prompts only when explicitly needed.
