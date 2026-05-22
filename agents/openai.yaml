@@ -1,0 +1,8 @@
+interface:
+  display_name: "Zhijuan Super Image Gen"
+  short_description: "Isolated image prompt director"
+  default_prompt: "Use $zhijuan-super-image-gen to prepare a compact Codex draft prompt and ChatGPT Images final handoff."
+
+policy:
+  allow_implicit_invocation: true
+
