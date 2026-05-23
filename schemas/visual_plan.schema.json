@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VisualPlan",
+  "type": "object",
+  "required": [
+    "direction_family",
+    "concept",
+    "scene_concept",
+    "shot_family",
+    "spatial_layers",
+    "composition",
+    "lighting",
+    "materials",
+    "text_strategy",
+    "constraint_pack",
+    "reference_anchors",
+    "human_checklist"
+  ],
+  "properties": {
+    "direction_family": {"type": "string"},
+    "concept": {"type": "string"},
+    "scene": {"type": "string"},
+    "scene_concept": {"type": "string"},
+    "shot_family": {"type": "string"},
+    "spatial_layers": {
+      "type": "object",
+      "properties": {
+        "foreground": {"type": "string"},
+        "midground": {"type": "string"},
+        "background": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "composition": {"type": "string"},
+    "lighting": {"type": "string"},
+    "materials": {"type": "string"},
+    "text_rule": {"type": "string"},
+    "text_strategy": {"type": "string"},
+    "hard_constraints": {"type": "array", "items": {"type": "string"}},
+    "constraint_pack": {"type": "array", "items": {"type": "string"}},
+    "reference_anchors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string"}
+      }
+    },
+    "human_checklist": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

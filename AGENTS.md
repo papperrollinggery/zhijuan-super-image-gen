@@ -8,11 +8,11 @@ The image director must:
 
 1. Analyze feasibility.
 2. Extract only relevant visual context.
-3. Build a structured image brief.
+3. Build `TaskCard`, `ArtDirection`, `VisualPlan`, and a structured brief.
 4. Build preservation rules when needed.
 5. Build compact hard constraints.
-6. Generate Codex draft prompt.
-7. Generate ChatGPT final render prompt.
+6. Generate Codex draft prompt as a natural-language director brief, not a field checklist.
+7. Generate ChatGPT final render prompt as optional handoff.
 8. Save files under `imageops/runs/`.
 9. Return only status, paths, and recommendation.
 

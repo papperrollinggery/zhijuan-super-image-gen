@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskCard",
+  "type": "object",
+  "required": [
+    "use_case",
+    "deliverable",
+    "user_intent",
+    "hero_subject",
+    "aspect_ratio",
+    "text_mode",
+    "must_show",
+    "must_not_show",
+    "hard_constraints",
+    "references",
+    "render_count",
+    "auto_regen"
+  ],
+  "properties": {
+    "use_case": {"type": "string"},
+    "deliverable": {"type": "string"},
+    "user_intent": {"type": "string"},
+    "hero_subject": {"type": "string"},
+    "aspect_ratio": {"type": "string"},
+    "wants_text": {"type": "boolean"},
+    "text_mode": {
+      "type": "string",
+      "enum": ["avoid_text", "headline_safe_only", "literal_copy", "short_readable_labels"]
+    },
+    "must_show": {"type": "array", "items": {"type": "string"}},
+    "must_not_show": {"type": "array", "items": {"type": "string"}},
+    "hard_constraints": {"type": "array", "items": {"type": "string"}},
+    "factual_risk": {"type": "array", "items": {"type": "string"}},
+    "references": {"type": "array", "items": {"type": "string"}},
+    "render_count": {"type": "integer", "minimum": 1},
+    "auto_regen": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}

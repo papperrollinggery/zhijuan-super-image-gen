@@ -54,6 +54,7 @@ def main() -> int:
     (run_dir / "feasibility.md").write_text(feasibility_markdown(feasibility), encoding="utf-8")
     write_json(run_dir / "brief.json", brief)
     write_json(run_dir / "task_card.json", brief.get("task_card", {}))
+    write_json(run_dir / "art_direction.json", brief.get("art_direction", {}))
     write_json(run_dir / "visual_plan.json", brief.get("visual_plan", {}))
     (run_dir / "negative.txt").write_text("\n".join(brief["negative"]) + "\n", encoding="utf-8")
     (run_dir / "codex.draft.txt").write_text(codex_prompt + "\n", encoding="utf-8")
@@ -85,8 +86,12 @@ def main() -> int:
         "human_checklist_path": relative_to_root(run_dir / "human_checklist.md", root) if checklist else None,
         "references": args.reference,
         "identity_lock_used": bool(identity_lock),
+        "director_id": (brief.get("art_direction") or {}).get("director_id"),
+        "visual_thesis": (brief.get("art_direction") or {}).get("visual_thesis"),
         "direction_family": (brief.get("visual_plan") or {}).get("direction_family"),
         "aspect_ratio": (brief.get("task_card") or {}).get("aspect_ratio"),
+        "text_mode": (brief.get("task_card") or {}).get("text_mode"),
+        "focal_hierarchy": (brief.get("art_direction") or {}).get("focal_hierarchy", []),
         "risk_flags": brief.get("craft_expansion", {}).get("risk_flags", []),
         "recommended_draft_renderer": "Codex image_gen",
         "recommended_final_renderer": "Optional ChatGPT Images handoff",
@@ -98,6 +103,7 @@ def main() -> int:
         "request.json",
         "brief.json",
         "task_card.json",
+        "art_direction.json",
         "visual_plan.json",
         "negative.txt",
         "codex.draft.txt",

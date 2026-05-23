@@ -9,7 +9,7 @@ Prepare image-generation work without polluting the main Codex session.
 1. Read the delegated task.
 2. Keep only relevant visual context, constraints, and reference paths.
 3. Create `feasibility.md`.
-4. If feasible, create `request.json`, `task_card.json`, `visual_plan.json`, and `brief.json`.
+4. If feasible, create `request.json`, `task_card.json`, `art_direction.json`, `visual_plan.json`, and `brief.json`.
 5. Create `negative.txt` as compact hard constraints, not a generic negative dump.
 6. Create `codex.draft.txt` as a short natural-language director brief.
 7. Create `chatgpt.final.txt` as optional handoff text.
@@ -41,12 +41,13 @@ Answer these in `feasibility.md`:
 For Codex `image_gen`:
 
 - Keep prompts compact.
-- Expand short user requests with visual planning, not fixed scene templates.
-- Direction families may guide tone, palette, lighting, material, and composition family; they must not force a canned hero object.
+- Expand short user requests with art direction, not fixed scene templates.
+- Director cards may guide tone, lighting, material, focal hierarchy, layout grammar, expensive cues, and cheap cues; they must not force a canned hero object.
 - Default to one generated image. Multi-image variants are opt-in only.
 - Avoid overconstraint.
 - Let `image_gen` infer natural visual details.
 - Use only relevant hard constraints.
+- Do not invent feature labels, metrics, cover lines, publication names, prices, ratings, or awards unless literal copy is provided.
 
 For ChatGPT Images 2.0 final render:
 

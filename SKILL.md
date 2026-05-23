@@ -5,7 +5,7 @@ description: Image-generation director workflow for Codex. Use when a request in
 
 # Zhijuan Super Image Gen
 
-Use this skill to prepare image-generation work without polluting the main Codex session with long prompts. This skill improves planning, prompt quality, isolation, versioning, handoff discipline, and one-sentence visual direction; it cannot change the underlying `image_gen` model or guarantee ChatGPT-equivalent rendering.
+Use this skill to prepare image-generation work without polluting the main Codex session with long prompts. This skill improves planning, prompt quality, isolation, versioning, handoff discipline, and art direction; it cannot change the underlying `image_gen` model or guarantee ChatGPT-equivalent rendering.
 
 ## Workflow
 
@@ -19,8 +19,8 @@ python3 scripts/create_run.py --task "$TASK" --slug "$SLUG"
 ```
 
 5. Stop before generation when feasibility returns `NEEDS_REFERENCES`, `NEEDS_USER_INPUT`, `NOT_USEFUL`, or `BLOCKED`.
-6. For one-sentence requests, build `task_card.json` and `visual_plan.json` first. Do not let presets directly decide the hero object or scene template.
-7. Render `codex.draft.txt` as a short natural-language director brief plus only a few hard constraints.
+6. For one-sentence requests, build `task_card.json`, `art_direction.json`, and `visual_plan.json` first. Do not let presets directly decide the hero object or scene template.
+7. Render `codex.draft.txt` as a short natural-language director brief plus only load-bearing text, preserve, and constraint lines.
 8. For optional handoff, use `chatgpt.final.txt`; do not imply Codex must hand off for final quality.
 9. Return only status, file paths, and recommendation.
 
@@ -38,14 +38,14 @@ python3 scripts/create_run.py --task "$TASK" --slug "$SLUG"
 For Codex `image_gen`, preserve native strengths:
 
 - Use compact prompts with clear subject, scene, camera, lighting, style, preservation, and avoid rules.
-- Add visual craft defaults when the user gives only a short request: subject hierarchy, foreground/background separation, tactile materials, consistent lighting, restrained background detail, and clean crop margins.
-- Use direction families as bias, not fixed scene templates. Direction families can influence tone, palette, lighting, materials, and composition family, but must not force fixed objects such as specific pedestals, feature-chip layouts, or trust-strip sections.
+- Add art-direction defaults when the user gives only a short request: visual thesis, emotional read, focal hierarchy, layout grammar, lighting motivation, tactile materials, expensive cues, cheap cues, and clean crop margins.
+- Use director cards as bias, not fixed scene templates. Director cards can influence tone, lighting, materials, hierarchy, and cheap/expensive cues, but must not force fixed objects such as specific pedestals, feature-chip layouts, or trust-strip sections.
 - Let the model infer natural visual detail.
 - Include only relevant hard constraints. Avoid generic negative prompt dumps.
 - Avoid repeated quality words, conflicting styles, long negative dumps, exact camera physics, and rigid composition rules.
 - Do not default to multi-image generation. Variants are opt-in.
 
-When expanding short prompts, use `references/craft_rules.md` and the matching file under `references/presets/` if you need more detail than `SKILL.md` provides.
+When expanding short prompts, use `references/craft_rules.md` and the matching file under `references/directors/` if you need more detail than `SKILL.md` provides.
 
 For ChatGPT Images 2.0 handoff:
 
@@ -69,6 +69,7 @@ Files created:
 - imageops/runs/{timestamp}-{slug}/request.json
 - imageops/runs/{timestamp}-{slug}/brief.json
 - imageops/runs/{timestamp}-{slug}/task_card.json
+- imageops/runs/{timestamp}-{slug}/art_direction.json
 - imageops/runs/{timestamp}-{slug}/visual_plan.json
 - imageops/runs/{timestamp}-{slug}/negative.txt
 - imageops/runs/{timestamp}-{slug}/codex.draft.txt

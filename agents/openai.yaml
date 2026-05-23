@@ -1,7 +1,7 @@
 interface:
   display_name: "Zhijuan Super Image Gen"
-  short_description: "Isolated image prompt director"
-  default_prompt: "Use $zhijuan-super-image-gen to prepare one compact Codex image prompt; export ChatGPT handoff only when needed."
+  short_description: "Isolated art-direction image prompt workflow"
+  default_prompt: "Use $zhijuan-super-image-gen to prepare TaskCard, ArtDirection, VisualPlan, and one compact Codex image prompt."
 
 policy:
   allow_implicit_invocation: true

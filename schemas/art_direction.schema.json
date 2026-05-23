@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArtDirection",
+  "type": "object",
+  "required": [
+    "director_id",
+    "visual_thesis",
+    "emotional_read",
+    "focal_hierarchy",
+    "layout_grammar",
+    "lighting_motivation",
+    "material_specificity",
+    "taste_anchors",
+    "expensive_cues",
+    "cheap_cues",
+    "text_policy"
+  ],
+  "properties": {
+    "director_id": {"type": "string"},
+    "visual_thesis": {"type": "string"},
+    "emotional_read": {"type": "string"},
+    "focal_hierarchy": {"type": "array", "items": {"type": "string"}},
+    "layout_grammar": {"type": "string"},
+    "lighting_motivation": {"type": "string"},
+    "material_specificity": {"type": "array", "items": {"type": "string"}},
+    "taste_anchors": {"type": "array", "items": {"type": "string"}},
+    "expensive_cues": {"type": "array", "items": {"type": "string"}},
+    "cheap_cues": {"type": "array", "items": {"type": "string"}},
+    "text_policy": {"type": "string"}
+  },
+  "additionalProperties": true
+}
