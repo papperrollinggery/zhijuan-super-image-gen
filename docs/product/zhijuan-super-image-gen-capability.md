@@ -12,6 +12,10 @@
 - ChatGPT Images handoff is optional and artifact-only; it is not the default final-render route.
 - Director cards guide thesis, tone, hierarchy, light, material, and cheap/expensive cues. They must not force fixed objects, layout widgets, feature chips, trust strips, pedestals, or fake brand marks.
 - Final Codex prompts must be short natural-language director briefs with only load-bearing `Text`, `Preserve`, and `Constraints` lines.
+- `visual_plan.json` carries the fixed structured breakdown: subject, action/pose, details/appearance, environment/background, lighting/atmosphere, composition/framing, style/camera, colors, materials, aspect ratio, quality/finish, and generation intent.
+- `prompt_core.txt` and `recreation_prompt.txt` are reusable prompt layers. `prompt.codex.txt` remains the default render input.
+- Multilingual prompt fields are not part of the default workflow; add them only for UI/export needs.
+- Style tags are compact metadata for indexing and review, not a replacement for the director brief.
 - Do not invent copy, metrics, prices, awards, ratings, user counts, publication names, or official logos unless literal copy or references are provided.
 - Identity locks are only for recurring people, characters, mascots, products, UI systems, or brand styles.
 - Reference handling is currently text-path aware only. True visual anchor extraction remains open.
@@ -58,6 +62,7 @@ Run lifecycle:
 - `TaskCard` owns product-facing intent: use case, deliverable, hero subject, aspect ratio, text mode, must-show, must-not-show, constraints, references, render count, and auto-regeneration policy.
 - `ArtDirection` owns quality-facing direction: director id, visual thesis, emotional read, focal hierarchy, layout grammar, lighting motivation, material specificity, taste anchors, expensive cues, cheap cues, and text policy.
 - `VisualPlan` owns execution-facing scene structure: scene concept, shot family, spatial layers, composition, lighting, materials, text strategy, constraints, reference anchors, and human checklist.
+- `VisualPlan` also owns type-aware visual breakdown, compact style tags, quality target, generation intent, and reusable prompt layers.
 - `brief.json` remains a compatibility aggregate, not the primary source of truth.
 - `negative.txt` is a legacy file name for compact hard constraints, not a generic negative prompt dump.
 - `metadata.json` must include director id, visual thesis, text mode, focal hierarchy, renderer recommendation, references, and run paths.

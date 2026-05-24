@@ -42,6 +42,7 @@ SCENE_TERMS = {"room", "street", "city", "landscape", "architecture", "interior"
 
 TEXT_HEAVY_TERMS = {"text", "typography", "copy", "headline", "poster", "banner", "label", "logo", "文字", "排版", "标题", "海报", "横幅", "标签", "卖点"}
 NO_FAKE_CLAIMS_TERMS = {"ecommerce", "poster", "ad", "landing", "marketing", "电商", "海报", "广告", "营销", "主图", "卖点"}
+NO_OFFICIAL_MARK_TERMS = ["no logo", "without logo", "no official logo", "no brand marks", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"]
 
 DIRECTOR_CARDS: dict[str, dict[str, Any]] = {
     "ecommerce_product_poster": {
@@ -156,18 +157,25 @@ class ArtDirection:
 @dataclass
 class VisualPlan:
     direction_family: str
+    visual_type: str
     concept: str
     scene: str
     scene_concept: str
+    visual_breakdown: dict[str, Any]
     shot_family: str
     spatial_layers: dict[str, str]
     composition: str
     lighting: str
     materials: str
+    color_system: list[str]
+    style_tags: list[str]
+    quality_target: str
+    generation_intent: str
     text_rule: str
     text_strategy: str
     hard_constraints: list[str]
     constraint_pack: list[str]
+    prompt_layers: dict[str, str]
     reference_anchors: dict[str, list[str]]
     human_checklist: list[str]
 
@@ -234,7 +242,7 @@ def infer_use_case(task: str) -> str:
 def detect_risk_flags(task: str, use_case: str, direction_family: str) -> list[str]:
     flags = []
     lower = task.lower()
-    no_official_mark = any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"])
+    no_official_mark = any(phrase in lower for phrase in NO_OFFICIAL_MARK_TERMS)
     identity_terms = IDENTITY_TERMS - {"brand", "logo", "品牌"} if no_official_mark else IDENTITY_TERMS
     if contains_any(task, TEXT_HEAVY_TERMS) or use_case in {"magazine cover", "poster", "ui mockup", "thumbnail"}:
         flags.append("text_risk")
@@ -287,7 +295,7 @@ def analyze_feasibility(task: str, references: list[str] | None = None) -> dict[
     lower = task.lower()
     image_useful = contains_any(task, VISUAL_TRIGGERS)
     vague = len(re.findall(r"[\w\u4e00-\u9fff]+", task)) < 4 or lower.strip() in {"make image", "generate image", "生图", "画图"}
-    no_official_mark = any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"])
+    no_official_mark = any(phrase in lower for phrase in NO_OFFICIAL_MARK_TERMS)
     identity_needed = contains_any(task, IDENTITY_TERMS)
     if no_official_mark:
         identity_needed = contains_any(task, IDENTITY_TERMS - {"brand", "logo", "品牌"})
@@ -337,7 +345,7 @@ def build_hard_constraints(task: str, max_items: int = 4) -> list[str]:
                 items.append(value)
 
     lower = task.lower()
-    if any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"]):
+    if any(phrase in lower for phrase in NO_OFFICIAL_MARK_TERMS):
         add(["do not use official logos or recreate official brand marks"])
     if contains_any(task, NO_FAKE_CLAIMS_TERMS) or any(phrase in lower for phrase in ["不要虚构", "no fake", "do not invent"]):
         add(["do not invent numbers, ratings, prices, awards, certifications, or user counts"])
@@ -352,6 +360,130 @@ def build_hard_constraints(task: str, max_items: int = 4) -> list[str]:
 
 def build_negative(task: str, max_items: int = 4) -> list[str]:
     return build_hard_constraints(task, max_items=max_items)
+
+
+def infer_visual_type(task: str, use_case: str, direction_family: str) -> str:
+    if direction_family == "fashion_editorial_cover" or use_case == "portrait":
+        return "portrait"
+    if use_case == "product image" or direction_family == "ecommerce_product_poster":
+        return "product"
+    if use_case == "ui mockup" or direction_family == "ui_marketing_mockup":
+        return "ui"
+    if use_case in {"poster", "thumbnail"} or direction_family == "graphic_poster_minimal":
+        return "poster"
+    if contains_any(task, {"3d", "render", "渲染"}):
+        return "3d"
+    if contains_any(task, {"illustration", "anime", "manga", "插画", "二次元", "动漫"}):
+        return "illustration"
+    if contains_any(task, {"photo", "photoreal", "realistic", "真实", "照片"}):
+        return "photography"
+    return "photography"
+
+
+def style_tags_for(visual_type: str, art: ArtDirection) -> list[str]:
+    base = {
+        "portrait": ["editorial portrait", "skin texture", "motivated light", "clean crop"],
+        "product": ["product hero", "tactile material", "contact shadow", "clean hierarchy"],
+        "poster": ["graphic poster", "negative space", "strong focal", "controlled type"],
+        "ui": ["ui mockup", "readable grid", "glass depth", "product led"],
+        "illustration": ["illustration", "clear silhouette", "controlled palette", "layered scene"],
+        "3d": ["3d render", "physical scale", "surface finish", "soft shadows"],
+        "photography": ["photoreal", "natural lens", "motivated light", "physical detail"],
+    }.get(visual_type, ["visual direction", "clear subject", "motivated light", "controlled palette"])
+    anchors = [item for item in art.taste_anchors if item not in base]
+    return (base + anchors)[:4]
+
+
+def infer_color_system(task: str, visual_type: str, art: ArtDirection) -> list[str]:
+    lower = task.lower()
+    colors: list[str] = []
+    candidates = [
+        ("black", {"black", "黑"}),
+        ("white", {"white", "白"}),
+        ("red", {"red", "红"}),
+        ("blue", {"blue", "蓝"}),
+        ("green", {"green", "绿"}),
+        ("gold", {"gold", "金"}),
+        ("silver", {"silver", "银"}),
+        ("warm sand", {"sand", "beach", "沙滩", "海滩"}),
+    ]
+    for label, terms in candidates:
+        if any(term in lower or term in task for term in terms):
+            colors.append(label)
+    if colors:
+        return colors[:4]
+    if visual_type == "ui":
+        return ["deep neutral surfaces", "soft interface glow", "one restrained accent"]
+    if visual_type == "portrait":
+        return ["natural skin tones", "environmental neutrals", "warm light accents"]
+    if visual_type == "poster":
+        return ["controlled neutral base", "one high-contrast accent", "quiet background tones"]
+    return ["controlled natural palette", "subject-led accents", "background restraint"]
+
+
+def quality_target_for(visual_type: str, art: ArtDirection) -> str:
+    targets = {
+        "portrait": "natural skin texture, believable catchlights, readable pose language, no waxy retouching",
+        "product": "clear silhouette, contact shadows, specific surfaces, believable scale and reflections",
+        "poster": "one strong visual idea, legible negative space, disciplined crop, no fake claims",
+        "ui": "readable primary interface, stable spacing, few large labels, credible screen depth",
+        "illustration": "clear silhouettes, coherent world detail, controlled palette, intentional line or paint finish",
+        "3d": "consistent scale, surface variation, grounded shadows, motivated reflections",
+        "photography": "motivated light, lens-consistent depth, tactile surfaces, coherent foreground to background",
+    }
+    return targets.get(visual_type, ", ".join(art.expensive_cues[:4]))
+
+
+def build_visual_breakdown(card: TaskCard, art: ArtDirection, visual_type: str, scene: str, colors: list[str]) -> dict[str, Any]:
+    spatial = {
+        "foreground": "one subtle depth cue that supports the subject",
+        "midground": card.hero_subject,
+        "background": "quiet atmosphere that adds depth without clutter",
+    }
+    action_pose = {
+        "portrait": "pose, gaze, gesture, expression, and body language must be visible when a person is present",
+        "product": "object placement, scale cues, contact with surface, and use context",
+        "poster": "symbolic subject placement and headline-safe visual rhythm",
+        "ui": "primary screen state, panel hierarchy, hover or active state only if requested",
+        "illustration": "character or object motion, silhouette, and readable staging",
+        "3d": "object orientation, scale, bevels, supports, and shadow grounding",
+        "photography": "natural subject placement and visible interaction with the environment",
+    }.get(visual_type, "visible subject placement and staging")
+    return {
+        "subject": card.hero_subject,
+        "action_pose": action_pose,
+        "details_appearance": ", ".join(card.must_show) if card.must_show else "visible, prompt-relevant details only; avoid hidden or unverifiable specifics",
+        "environment_background": scene,
+        "lighting_atmosphere": art.lighting_motivation,
+        "composition_framing": art.layout_grammar,
+        "style_camera": ", ".join(art.taste_anchors[:2]),
+        "colors": colors,
+        "materials": art.material_specificity,
+        "aspect_ratio": card.aspect_ratio,
+        "quality_finish": quality_target_for(visual_type, art),
+        "generation_intent": art.visual_thesis,
+        "spatial_layers": spatial,
+    }
+
+
+def build_prompt_layers(card: TaskCard, art: ArtDirection, plan_seed: dict[str, Any], constraints: list[str]) -> dict[str, str]:
+    core = (
+        f"{card.aspect_ratio} {card.deliverable} centered on {card.hero_subject}; "
+        f"{art.visual_thesis}; {plan_seed['lighting_atmosphere']}; "
+        f"{plan_seed['composition_framing']}; palette: {', '.join(plan_seed['colors'])}; "
+        f"materials: {', '.join(plan_seed['materials'][:5])}."
+    )
+    recreation = (
+        f"Create a {core} Show foreground, midground, and background relationships clearly. "
+        f"Quality target: {plan_seed['quality_finish']}. "
+        f"Use only visually plausible details implied by the user request or references; avoid generic quality filler."
+    )
+    negative = "; ".join(constraints) if constraints else "avoid generic artifacts, fake text, fake claims, and unrequested brand marks"
+    return {
+        "prompt_core": core,
+        "recreation_prompt": recreation,
+        "negative_prompt": negative,
+    }
 
 
 def list_from_text(value: str | list[str] | None) -> list[str]:
@@ -424,7 +556,7 @@ def extract_task_terms(task: str) -> tuple[list[str], list[str]]:
         add_unique(must_not_show, ["nudity", "pin-up posing", "underage subject"])
     if contains_any(task, {"高级", "premium", "luxury", "质感"}):
         add_unique(must_show, ["premium finish", "specific tactile materials", "motivated light"])
-    if contains_any(task, {"不要 logo", "不要logo", "no logo", "without logo"}):
+    if contains_any(task, {"不要 logo", "不要logo", "no logo", "without logo", "no official logo", "no brand marks"}):
         add_unique(must_not_show, ["official logos", "brand marks"])
     if "不要虚构" in task or "do not invent" in task.lower():
         add_unique(must_not_show, ["fabricated numbers", "fake claims"])
@@ -508,6 +640,7 @@ def build_art_direction(task: str, card: TaskCard) -> ArtDirection:
 def build_visual_plan(task: str, card: TaskCard, art_direction: ArtDirection | None = None) -> VisualPlan:
     art = art_direction or build_art_direction(task, card)
     family = art.director_id
+    visual_type = infer_visual_type(task, card.use_case, family)
     if "Codex" in task or "codex" in task.lower():
         concept = art.visual_thesis
         scene = "a layered developer workspace or studio productized coding environment with one dominant coding artifact in action, subtle evidence of reasoning and iteration, and a calm technical background"
@@ -534,10 +667,16 @@ def build_visual_plan(task: str, card: TaskCard, art_direction: ArtDirection | N
         "midground": card.hero_subject,
         "background": "quiet atmosphere that adds depth without clutter",
     }
+    color_system = infer_color_system(task, visual_type, art)
+    visual_breakdown = build_visual_breakdown(card, art, visual_type, scene, color_system)
+    prompt_layers = build_prompt_layers(card, art, visual_breakdown, card.hard_constraints)
+    style_tags = style_tags_for(visual_type, art)
+    quality_target = visual_breakdown["quality_finish"]
     checklist = [
         "Main subject is clear in the first second.",
         "Light direction, contact shadows, and screen glow feel coherent.",
         "Materials feel physical, not flat or generic.",
+        "Prompt describes visible evidence and avoids hidden unverifiable detail.",
         "The image avoids cheap cues such as " + ", ".join(art.cheap_cues[:3]) + ".",
     ]
     if card.wants_text:
@@ -546,18 +685,25 @@ def build_visual_plan(task: str, card: TaskCard, art_direction: ArtDirection | N
         checklist.append("Composition still reads at mobile thumbnail size.")
     return VisualPlan(
         direction_family=family,
+        visual_type=visual_type,
         concept=concept,
         scene=scene,
         scene_concept=scene,
+        visual_breakdown=visual_breakdown,
         shot_family=art.taste_anchors[0],
         spatial_layers=spatial_layers,
         composition=f"{art.layout_grammar}; keep one dominant focal subject and enough negative space for the requested {card.aspect_ratio} crop",
         lighting=art.lighting_motivation,
         materials=", ".join(art.material_specificity),
+        color_system=color_system,
+        style_tags=style_tags,
+        quality_target=quality_target,
+        generation_intent=art.visual_thesis,
         text_rule=text_rule,
         text_strategy=text_rule,
         hard_constraints=card.hard_constraints,
         constraint_pack=card.hard_constraints,
+        prompt_layers=prompt_layers,
         reference_anchors={"identity": [], "palette": [], "lighting": [], "composition": [], "material": [], "forbidden_drift": []},
         human_checklist=checklist,
     )
@@ -592,8 +738,13 @@ def build_brief(task: str, status: str, references: list[str] | None = None) -> 
     }
     brief["craft_expansion"] = {
         "taste_preset": art_direction.director_id,
+        "visual_type": visual_plan.visual_type,
         "visual_thesis": art_direction.visual_thesis,
         "aspect_ratio": task_card.aspect_ratio,
+        "visual_breakdown": visual_plan.visual_breakdown,
+        "style_tags": visual_plan.style_tags,
+        "quality_target": visual_plan.quality_target,
+        "prompt_layers": visual_plan.prompt_layers,
         "composition": visual_plan.composition,
         "lighting": visual_plan.lighting,
         "materials": visual_plan.materials,
@@ -686,7 +837,7 @@ def infer_composition(use_case: str) -> str:
 def infer_preserve(task: str, references: list[str]) -> list[str]:
     preserve = []
     lower = task.lower()
-    no_official_mark = any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"])
+    no_official_mark = any(phrase in lower for phrase in NO_OFFICIAL_MARK_TERMS)
     identity_terms = IDENTITY_TERMS - {"brand", "logo", "品牌"} if no_official_mark else IDENTITY_TERMS
     if contains_any(task, identity_terms):
         preserve.append("preserve identity, silhouette, proportions, and style from references or user description")
@@ -703,7 +854,8 @@ def compress_prompt(text: str, max_words: int = 300) -> str:
     for line in lines:
         label, sep, body = line.partition(":")
         if sep and re.match(r"^[A-Za-z][A-Za-z ]{1,24}$", label.strip()):
-            phrases = [p.strip() for p in re.split(r",|;", body) if p.strip()]
+            split_pattern = r";" if label.strip().lower() == "constraints" else r",|;"
+            phrases = [p.strip() for p in re.split(split_pattern, body) if p.strip()]
             deduped = []
             seen_phrases = set()
             for phrase in phrases:
@@ -711,7 +863,8 @@ def compress_prompt(text: str, max_words: int = 300) -> str:
                 if key not in seen_phrases:
                     deduped.append(phrase)
                     seen_phrases.add(key)
-            line = f"{label}: {', '.join(deduped)}" if deduped else f"{label}:"
+            joiner = "; " if label.strip().lower() == "constraints" else ", "
+            line = f"{label}: {joiner.join(deduped)}" if deduped else f"{label}:"
         key = line.lower()
         if key not in seen_lines:
             cleaned.append(line)
@@ -752,7 +905,9 @@ Build the image around {art.get("visual_thesis") or plan.get("concept") or "one 
 Show {plan.get("scene_concept") or plan.get("scene") or brief.get("scene")}, with {card.get("hero_subject", brief.get("subject"))} as the first read and {second_read} as the second read.
 Use {art.get("lighting_motivation") or plan.get("lighting") or brief.get("lighting")}. Materials should feel specific and tactile: {material_text}.
 Keep the composition {art.get("layout_grammar") or plan.get("composition") or brief.get("composition")}.
+Use the palette {", ".join(plan.get("color_system") or ["controlled natural palette"])}. Quality target: {plan.get("quality_target") or "visible, concrete finish cues instead of generic quality words"}.
 The image should feel {art.get("emotional_read") or brief.get("style")}, not {cheap_text}.
+Use only visible or user-provided evidence; do not invent hidden brands, exact claims, precise locations, or unverifiable details.
 {text_line}
 {preserve_line}
 {constraint_line}
@@ -770,26 +925,30 @@ def make_chatgpt_prompt(brief: dict[str, Any]) -> str:
         item for item in constraints
         if not (item == "keep visible text short, large, and legible" and "legible" in text_rule.lower())
     ]
-    text = f"""\
+    layers = plan.get("prompt_layers") or {}
+    if layers.get("recreation_prompt"):
+        text = f"""\
 FINAL_RENDER_HANDOFF
-Use case: {card.get("aspect_ratio", "")} {card.get("deliverable", brief.get("use_case", "image"))}.
-Visual thesis: {art.get("visual_thesis") or plan.get("concept") or brief.get("style")}.
-Scene: {plan.get("scene_concept") or plan.get("scene") or brief.get("scene")}.
-Subject: {card.get("hero_subject", brief.get("subject"))}.
-Lighting: {art.get("lighting_motivation") or plan.get("lighting") or brief.get("lighting")}.
-Materials: {", ".join(art.get("material_specificity") or []) or plan.get("materials") or brief.get("materials") or "believable tactile surfaces"}.
-Composition: {art.get("layout_grammar") or plan.get("composition") or brief.get("composition")}. Focal hierarchy: {", ".join(art.get("focal_hierarchy") or [])}.
-Taste anchors: {", ".join(art.get("taste_anchors") or [])}.
+{layers["recreation_prompt"]}
 Text: {text_rule}
-Avoid cheap cues: {", ".join((art.get("cheap_cues") or [])[:5])}.
+Style tags: {", ".join(plan.get("style_tags") or art.get("taste_anchors") or [])}.
 Constraints: {"; ".join(constraints)}
 """
-    return compress_prompt(text, max_words=360)
+    else:
+        text = f"""\
+FINAL_RENDER_HANDOFF
+Create a {card.get("aspect_ratio", "")} {card.get("deliverable", brief.get("use_case", "image"))} around {art.get("visual_thesis") or plan.get("concept") or brief.get("style")}.
+Show {plan.get("scene_concept") or plan.get("scene") or brief.get("scene")} with {card.get("hero_subject", brief.get("subject"))} as the first read, {art.get("lighting_motivation") or plan.get("lighting") or brief.get("lighting")}, and tactile materials: {", ".join(art.get("material_specificity") or []) or plan.get("materials") or brief.get("materials") or "believable tactile surfaces"}.
+Keep the composition {art.get("layout_grammar") or plan.get("composition") or brief.get("composition")}; quality target: {plan.get("quality_target") or "concrete visible finish cues"}.
+Text: {text_rule}
+Constraints: {"; ".join(constraints)}
+"""
+    return compress_prompt(text, max_words=260)
 
 
 def make_identity_lock(task: str, references: list[str]) -> dict[str, Any] | None:
     lower = task.lower()
-    no_official_mark = any(phrase in lower for phrase in ["no logo", "without logo", "do not use official", "不要使用官方", "不使用官方", "不要官方", "不要 logo", "不要logo"])
+    no_official_mark = any(phrase in lower for phrase in NO_OFFICIAL_MARK_TERMS)
     identity_terms = IDENTITY_TERMS - {"brand", "logo", "品牌"} if no_official_mark else IDENTITY_TERMS
     if not contains_any(task, identity_terms):
         return None

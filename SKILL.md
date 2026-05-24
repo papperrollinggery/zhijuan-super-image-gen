@@ -20,9 +20,11 @@ python3 scripts/create_run.py --task "$TASK" --slug "$SLUG"
 
 5. Stop before generation when feasibility returns `NEEDS_REFERENCES`, `NEEDS_USER_INPUT`, `NOT_USEFUL`, or `BLOCKED`.
 6. For one-sentence requests, build `task_card.json`, `art_direction.json`, and `visual_plan.json` first. Do not let presets directly decide the hero object or scene template.
-7. Render `codex.draft.txt` as a short natural-language director brief plus only load-bearing text, preserve, and constraint lines.
-8. For optional handoff, use `chatgpt.final.txt`; do not imply Codex must hand off for final quality.
-9. Return only status, file paths, and recommendation.
+7. In `visual_plan.json`, keep a fixed visual breakdown: subject, action/pose, details/appearance, environment/background, lighting/atmosphere, composition/framing, style/camera, colors, materials, aspect ratio, quality/finish, and generation intent.
+8. Render `codex.draft.txt` as a short natural-language director brief plus only load-bearing text, preserve, and constraint lines.
+9. Also save `prompt_core.txt` and `recreation_prompt.txt` as reusable prompt layers; treat `negative.txt` as compact hard constraints.
+10. For optional handoff, use `chatgpt.final.txt`; do not imply Codex must hand off for final quality.
+11. Return only status, file paths, and recommendation.
 
 ## Feasibility Status
 
@@ -39,11 +41,15 @@ For Codex `image_gen`, preserve native strengths:
 
 - Use compact prompts with clear subject, scene, camera, lighting, style, preservation, and avoid rules.
 - Add art-direction defaults when the user gives only a short request: visual thesis, emotional read, focal hierarchy, layout grammar, lighting motivation, tactile materials, expensive cues, cheap cues, and clean crop margins.
+- Use type-aware planning for portraits, product images, posters, UI, illustration, 3D, and photography. Keep the type logic inside artifacts and the final brief, not as a long checklist.
 - Use director cards as bias, not fixed scene templates. Director cards can influence tone, lighting, materials, hierarchy, and cheap/expensive cues, but must not force fixed objects such as specific pedestals, feature-chip layouts, or trust-strip sections.
 - Let the model infer natural visual detail.
 - Include only relevant hard constraints. Avoid generic negative prompt dumps.
+- Use concrete visible finish cues instead of filler such as `masterpiece`, `highly detailed`, or repeated generic quality words.
+- Do not invent hidden brands, exact text, precise locations, tools, claims, or off-frame details unless the user or references provide them.
 - Avoid repeated quality words, conflicting styles, long negative dumps, exact camera physics, and rigid composition rules.
 - Do not default to multi-image generation. Variants are opt-in.
+- Keep output artifacts in English by default. Do not add multilingual prompt fields unless a downstream UI or user request needs them.
 
 When expanding short prompts, use `references/craft_rules.md` and the matching file under `references/directors/` if you need more detail than `SKILL.md` provides.
 
@@ -76,6 +82,8 @@ Files created:
 - imageops/runs/{timestamp}-{slug}/chatgpt.final.txt
 - imageops/runs/{timestamp}-{slug}/prompt.codex.txt
 - imageops/runs/{timestamp}-{slug}/prompt.chatgpt.txt
+- imageops/runs/{timestamp}-{slug}/prompt_core.txt
+- imageops/runs/{timestamp}-{slug}/recreation_prompt.txt
 - imageops/runs/{timestamp}-{slug}/human_checklist.md
 - imageops/runs/{timestamp}-{slug}/review.md
 - imageops/runs/{timestamp}-{slug}/metadata.json

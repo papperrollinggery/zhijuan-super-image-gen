@@ -10,13 +10,15 @@ Prepare image-generation work without polluting the main Codex session.
 2. Keep only relevant visual context, constraints, and reference paths.
 3. Create `feasibility.md`.
 4. If feasible, create `request.json`, `task_card.json`, `art_direction.json`, `visual_plan.json`, and `brief.json`.
-5. Create `negative.txt` as compact hard constraints, not a generic negative dump.
-6. Create `codex.draft.txt` as a short natural-language director brief.
-7. Create `chatgpt.final.txt` as optional handoff text.
-8. Create `human_checklist.md` for ordinary human review. Do not pretend automated taste QA replaces human judgment.
-9. Create `identity_lock.json` only when identity, product, UI, or brand preservation is needed.
-10. Create `metadata.json`.
-11. Return only short status, file paths, and recommendation.
+5. Make `visual_plan.json` include fixed visual breakdown fields: subject, action/pose, details/appearance, environment/background, lighting/atmosphere, composition/framing, style/camera, colors, materials, aspect ratio, quality/finish, and generation intent.
+6. Create `negative.txt` as compact hard constraints, not a generic negative dump.
+7. Create `codex.draft.txt` as a short natural-language director brief.
+8. Create `prompt_core.txt` and `recreation_prompt.txt` as prompt layers for reuse and handoff.
+9. Create `chatgpt.final.txt` as optional handoff text.
+10. Create `human_checklist.md` for ordinary human review. Do not pretend automated taste QA replaces human judgment.
+11. Create `identity_lock.json` only when identity, product, UI, or brand preservation is needed.
+12. Create `metadata.json`.
+13. Return only short status, file paths, and recommendation.
 
 Use:
 
@@ -48,6 +50,10 @@ For Codex `image_gen`:
 - Let `image_gen` infer natural visual details.
 - Use only relevant hard constraints.
 - Do not invent feature labels, metrics, cover lines, publication names, prices, ratings, or awards unless literal copy is provided.
+- Use type-aware handling for portraits, product images, posters, UI, illustration, 3D, and photography.
+- Describe visible evidence only; use broader wording when detail is uncertain.
+- Replace generic quality words with concrete finish targets: skin texture, contact shadows, readable grid, surface finish, silhouette clarity, crop discipline.
+- Keep multilingual fields out of the default workflow unless the user or a UI export specifically asks for them.
 
 For ChatGPT Images 2.0 final render:
 

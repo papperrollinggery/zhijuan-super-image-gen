@@ -48,6 +48,7 @@ def main() -> int:
     brief = build_brief(task, feasibility["status"], args.reference)
     codex_prompt = make_codex_prompt(brief)
     chatgpt_prompt = make_chatgpt_prompt(brief)
+    prompt_layers = (brief.get("visual_plan") or {}).get("prompt_layers") or {}
     identity_lock = make_identity_lock(task, args.reference)
 
     write_json(run_dir / "request.json", {"task": task, "references": args.reference, "source_context": args.source_context})
@@ -61,6 +62,10 @@ def main() -> int:
     (run_dir / "chatgpt.final.txt").write_text(chatgpt_prompt + "\n", encoding="utf-8")
     (run_dir / "prompt.codex.txt").write_text(codex_prompt + "\n", encoding="utf-8")
     (run_dir / "prompt.chatgpt.txt").write_text(chatgpt_prompt + "\n", encoding="utf-8")
+    if prompt_layers.get("prompt_core"):
+        (run_dir / "prompt_core.txt").write_text(prompt_layers["prompt_core"] + "\n", encoding="utf-8")
+    if prompt_layers.get("recreation_prompt"):
+        (run_dir / "recreation_prompt.txt").write_text(prompt_layers["recreation_prompt"] + "\n", encoding="utf-8")
     checklist = (brief.get("visual_plan") or {}).get("human_checklist") or brief.get("craft_expansion", {}).get("human_checklist", [])
     if checklist:
         (run_dir / "human_checklist.md").write_text(
@@ -92,6 +97,9 @@ def main() -> int:
         "aspect_ratio": (brief.get("task_card") or {}).get("aspect_ratio"),
         "text_mode": (brief.get("task_card") or {}).get("text_mode"),
         "focal_hierarchy": (brief.get("art_direction") or {}).get("focal_hierarchy", []),
+        "visual_type": (brief.get("visual_plan") or {}).get("visual_type"),
+        "style_tags": (brief.get("visual_plan") or {}).get("style_tags", []),
+        "quality_target": (brief.get("visual_plan") or {}).get("quality_target"),
         "risk_flags": brief.get("craft_expansion", {}).get("risk_flags", []),
         "recommended_draft_renderer": "Codex image_gen",
         "recommended_final_renderer": "Optional ChatGPT Images handoff",
@@ -110,6 +118,8 @@ def main() -> int:
         "chatgpt.final.txt",
         "prompt.codex.txt",
         "prompt.chatgpt.txt",
+        "prompt_core.txt",
+        "recreation_prompt.txt",
         "human_checklist.md",
         "review.md",
         "metadata.json",
@@ -117,6 +127,10 @@ def main() -> int:
     if not checklist:
         files.remove("human_checklist.md")
         files.remove("review.md")
+    if not prompt_layers.get("prompt_core"):
+        files.remove("prompt_core.txt")
+    if not prompt_layers.get("recreation_prompt"):
+        files.remove("recreation_prompt.txt")
     if identity_lock:
         files.insert(-1, "identity_lock.json")
 

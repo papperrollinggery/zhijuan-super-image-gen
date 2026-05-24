@@ -13,6 +13,48 @@ Use these rules when expanding a short image request before calling Codex `image
 7. Short, readable text only when needed.
 8. No invented claims, metrics, ratings, certifications, awards, prices, or user counts.
 9. Director cards guide tone, lighting, materials, focal hierarchy, layout grammar, expensive cues, and cheap cues only. They must not force fixed scene objects or fixed layout widgets.
+10. Plan with visible evidence only. Do not invent hidden objects, exact brands, exact copy, precise locations, tools, or off-frame facts.
+11. Use concrete finish targets instead of generic quality filler.
+12. Choose type-aware emphasis:
+    - Portrait: pose, gaze, expression, skin texture, hair, clothing, motivated catchlight.
+    - Product: silhouette, scale, contact shadow, surface finish, reflection behavior.
+    - Poster: visual hierarchy, headline-safe negative space, crop, symbolic clarity.
+    - UI: primary screen state, readable grid, spacing, few large labels.
+    - Illustration: silhouette, line or paint finish, controlled palette, world detail.
+    - 3D: scale, bevels, material roughness, grounded shadows.
+    - Photography: lens-consistent depth, foreground/midground/background, natural light behavior.
+
+## Structured Planning
+
+Keep these fields in `visual_plan.json`, not as a final prompt checklist:
+
+```json
+{
+  "visual_type": "portrait | product | poster | ui | illustration | 3d | photography",
+  "visual_breakdown": {
+    "subject": "...",
+    "action_pose": "...",
+    "details_appearance": "...",
+    "environment_background": "...",
+    "lighting_atmosphere": "...",
+    "composition_framing": "...",
+    "style_camera": "...",
+    "colors": ["..."],
+    "materials": ["..."],
+    "aspect_ratio": "...",
+    "quality_finish": "...",
+    "generation_intent": "..."
+  },
+  "style_tags": ["tag 1", "tag 2", "tag 3", "tag 4"],
+  "prompt_layers": {
+    "prompt_core": "...",
+    "recreation_prompt": "...",
+    "negative_prompt": "..."
+  }
+}
+```
+
+Use English artifact fields by default. Multilingual prompts are an export concern, not the core Codex workflow.
 
 ## Prompt Shape
 

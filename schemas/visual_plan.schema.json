@@ -4,23 +4,49 @@
   "type": "object",
   "required": [
     "direction_family",
+    "visual_type",
     "concept",
     "scene_concept",
+    "visual_breakdown",
     "shot_family",
     "spatial_layers",
     "composition",
     "lighting",
     "materials",
+    "color_system",
+    "style_tags",
+    "quality_target",
+    "generation_intent",
     "text_strategy",
     "constraint_pack",
+    "prompt_layers",
     "reference_anchors",
     "human_checklist"
   ],
   "properties": {
     "direction_family": {"type": "string"},
+    "visual_type": {"type": "string"},
     "concept": {"type": "string"},
     "scene": {"type": "string"},
     "scene_concept": {"type": "string"},
+    "visual_breakdown": {
+      "type": "object",
+      "required": [
+        "subject",
+        "action_pose",
+        "details_appearance",
+        "environment_background",
+        "lighting_atmosphere",
+        "composition_framing",
+        "style_camera",
+        "colors",
+        "materials",
+        "aspect_ratio",
+        "quality_finish",
+        "generation_intent"
+      ],
+      "additionalProperties": true
+    },
     "shot_family": {"type": "string"},
     "spatial_layers": {
       "type": "object",
@@ -34,10 +60,23 @@
     "composition": {"type": "string"},
     "lighting": {"type": "string"},
     "materials": {"type": "string"},
+    "color_system": {"type": "array", "items": {"type": "string"}},
+    "style_tags": {"type": "array", "items": {"type": "string"}},
+    "quality_target": {"type": "string"},
+    "generation_intent": {"type": "string"},
     "text_rule": {"type": "string"},
     "text_strategy": {"type": "string"},
     "hard_constraints": {"type": "array", "items": {"type": "string"}},
     "constraint_pack": {"type": "array", "items": {"type": "string"}},
+    "prompt_layers": {
+      "type": "object",
+      "properties": {
+        "prompt_core": {"type": "string"},
+        "recreation_prompt": {"type": "string"},
+        "negative_prompt": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
     "reference_anchors": {
       "type": "object",
       "additionalProperties": {
