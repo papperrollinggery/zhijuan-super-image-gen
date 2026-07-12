@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ImageOpsRunMetadata",
+  "type": "object",
+  "required": [
+    "runtime_version", "schema_version", "input_sha256", "artifact_receipt",
+    "task_id", "created_at", "source_context", "feasibility_status", "run_path",
+    "draft_prompt_path", "final_prompt_path", "negative_prompt_path", "references",
+    "local_references", "reference_urls", "invalid_references",
+    "identity_lock_used", "director_id", "visual_thesis", "direction_family",
+    "aspect_ratio", "text_mode", "focal_hierarchy", "visual_type",
+    "selected_concept_id", "concept_candidate_count", "style_tags", "quality_target",
+    "risk_flags", "recommended_draft_renderer", "recommended_final_renderer"
+  ],
+  "properties": {
+    "runtime_version": {"type": "string"},
+    "schema_version": {"type": "string"},
+    "input_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "artifact_receipt": {
+      "type": "object",
+      "required": ["version", "algorithm", "hashes"],
+      "properties": {
+        "version": {"type": "integer", "minimum": 1},
+        "algorithm": {"type": "string", "enum": ["sha256"]},
+        "hashes": {
+          "type": "object",
+          "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "task_id": {"type": "string"},
+    "created_at": {"type": "string"},
+    "source_context": {"type": "string"},
+    "feasibility_status": {
+      "type": "string",
+      "enum": ["PROCEED", "PROCEED_WITH_ASSUMPTIONS", "NEEDS_REFERENCES", "NEEDS_USER_INPUT", "NOT_USEFUL", "BLOCKED"]
+    },
+    "run_path": {"type": "string"},
+    "draft_prompt_path": {"type": "string"},
+    "final_prompt_path": {"type": "string"},
+    "negative_prompt_path": {"type": "string"},
+    "references": {"type": "array", "items": {"type": "string"}},
+    "local_references": {"type": "array", "items": {"type": "string"}},
+    "reference_urls": {"type": "array", "items": {"type": "string"}},
+    "invalid_references": {"type": "array", "items": {"type": "string"}},
+    "identity_lock_used": {"type": "boolean"},
+    "director_id": {"type": "string"},
+    "visual_thesis": {"type": "string"},
+    "direction_family": {"type": "string"},
+    "aspect_ratio": {"type": "string"},
+    "text_mode": {"type": "string"},
+    "focal_hierarchy": {"type": "array", "items": {"type": "string"}},
+    "visual_type": {"type": "string"},
+    "selected_concept_id": {"type": "string"},
+    "concept_candidate_count": {"type": "integer", "minimum": 1},
+    "style_tags": {"type": "array", "items": {"type": "string"}},
+    "quality_target": {"type": "string"},
+    "risk_flags": {"type": "array", "items": {"type": "string"}},
+    "recommended_draft_renderer": {"type": "string"},
+    "recommended_final_renderer": {"type": "string"}
+  },
+  "additionalProperties": true
+}

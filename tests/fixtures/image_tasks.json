@@ -1,0 +1,123 @@
+[
+  {
+    "id": "chinese_infographic",
+    "task": "生成一张高级中文信息图，只使用抽象几何图形和文字标签。主题：解释 image_gen 出图和 ChatGPT 出图的区别，并介绍 zhijuan-super-image-gen 的特性。不要使用任何官方 logo、品牌标志、产品界面截图或真实品牌视觉保真。",
+    "expected_status": "PROCEED",
+    "expected_use_case": "infographic",
+    "expected_director": "graphic_poster_minimal",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "chinese_portrait",
+    "task": "生成一张电影感人物肖像，夜晚街头，雨后反光，真实皮肤质感。",
+    "expected_status": "PROCEED_WITH_ASSUMPTIONS",
+    "expected_use_case": "portrait",
+    "expected_director": "cinematic_portrait",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "codex_ecommerce_poster",
+    "task": "生成一张 Codex 的介绍电商海报，突出 AI coding agent，光影高级，质感强，细节丰富，适合 4:5 电商主图。不要官方 logo，不要虚构数字。",
+    "expected_status": "PROCEED",
+    "expected_use_case": "poster",
+    "expected_director": "developer_tool_campaign",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "ui_mockup",
+    "task": "生成一个高端 SaaS 数据看板 UI mockup，白底，信息层级清晰，适合官网 hero 图。",
+    "expected_status": "PROCEED_WITH_ASSUMPTIONS",
+    "expected_use_case": "ui mockup",
+    "expected_director": "ui_marketing_mockup",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "product_poster",
+    "task": "生成一张高级产品海报，主体是一只磨砂金属智能音箱，干净背景，强调接触阴影和材质，不要虚构价格或奖项。",
+    "expected_status": "PROCEED_WITH_ASSUMPTIONS",
+    "expected_use_case": "poster",
+    "expected_director": "ecommerce_product_poster",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "fashion_cover",
+    "task": "生成一张成人夏季度假风泳装杂志封面，阳光海岸，时尚高级，留出封面标题安全区域，不要虚构刊名和价格。",
+    "expected_status": "PROCEED_WITH_ASSUMPTIONS",
+    "expected_use_case": "magazine cover",
+    "expected_director": "fashion_editorial_cover",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "exact_identity_requires_references",
+    "task": "生成同一个人的头像，必须和参考图一模一样，保持脸型、发型和比例。",
+    "expected_status": "NEEDS_REFERENCES",
+    "expected_use_case": "portrait",
+    "expected_director": "cinematic_portrait",
+    "references_required": true,
+    "identity_lock": true,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "no_logo_brand_explainer",
+    "task": "生成一张介绍 ChatGPT 和 image_gen 区别的解释图，不要使用官方 logo，不要品牌标志，只用抽象图形和文字标签。",
+    "expected_status": "PROCEED_WITH_ASSUMPTIONS",
+    "expected_use_case": "infographic",
+    "expected_director": "graphic_poster_minimal",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "reference_style_with_reference",
+    "task": "根据参考图保持插画风格，生成一个新的城市夜景概念图。",
+    "references": ["https://example.com/reference-style.png"],
+    "expected_status": "NEEDS_REFERENCES",
+    "expected_use_case": "scene design",
+    "expected_director": "cinematic_portrait",
+    "references_required": true,
+    "identity_lock": true,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "vague_simple_image",
+    "task": "生图",
+    "expected_status": "NEEDS_USER_INPUT",
+    "expected_use_case": "image generation",
+    "expected_director": "cinematic_portrait",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "storyboard",
+    "task": "生成一个三镜头分镜，表现 AI agent 接收任务、规划步骤、输出结果，黑白线稿风格。",
+    "expected_status": "PROCEED_WITH_ASSUMPTIONS",
+    "expected_use_case": "storyboard",
+    "expected_director": "cinematic_portrait",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  },
+  {
+    "id": "thumbnail",
+    "task": "生成一个 YouTube 缩略图，主题是 AI 图片生成工作流，文字短，大标题安全区，适合小尺寸阅读。",
+    "expected_status": "PROCEED_WITH_ASSUMPTIONS",
+    "expected_use_case": "thumbnail",
+    "expected_director": "ecommerce_product_poster",
+    "references_required": false,
+    "identity_lock": false,
+    "max_prompt_lexical_units": 190
+  }
+]

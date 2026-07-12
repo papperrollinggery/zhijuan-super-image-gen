@@ -1,0 +1,36 @@
+[
+  {
+    "id": "quiet_launch_poster",
+    "task": "Create a 4:5 launch poster for a pocket field recorder on a rain-darkened studio desk. Headline: LISTEN CLOSER. Show brushed aluminum, one red recording light, a grounded contact shadow, and ample quiet space. Constraints: no price; no awards. Avoid: floating UI cards."
+  },
+  {
+    "id": "recurring_mascot_scene",
+    "task": "生成同一个吉祥物在清晨菜市场挑选鲜花的插画，保持角色比例和配色一致，画面有生活感，横版。"
+  },
+  {
+    "id": "attachment_face_preservation",
+    "task": "Create a portrait and keep her face, hairstyle, and proportions unchanged from the attachment.",
+    "expected_status": "NEEDS_REFERENCES"
+  },
+  {
+    "id": "attachment_brand_preservation_zh",
+    "task": "生成品牌海报，严格保持附件里的品牌视觉、字体、配色和版式一致。",
+    "expected_status": "NEEDS_REFERENCES"
+  },
+  {
+    "id": "literal_copy_zh_sentences",
+    "task": "生成海报。标题：你好。世界。",
+    "expected_literal_copy": ["你好。世界。"]
+  },
+  {
+    "id": "literal_copy_en_sentences",
+    "task": "Create a poster. Headline: build quietly. ship confidently.",
+    "expected_literal_copy": ["build quietly. ship confidently."]
+  },
+  {
+    "id": "constraint_budget_overflow",
+    "task": "Create a 16:9 poster.\nConstraints: keep requirement zero exactly as written; keep requirement one exactly as written; keep requirement two exactly as written; keep requirement three exactly as written; keep requirement four exactly as written; keep requirement five exactly as written; keep requirement six exactly as written; keep requirement seven exactly as written; keep requirement eight exactly as written; keep requirement nine exactly as written; keep requirement ten exactly as written; keep requirement eleven exactly as written; keep requirement twelve exactly as written; keep requirement thirteen exactly as written; keep requirement fourteen exactly as written; keep requirement fifteen exactly as written; keep requirement sixteen exactly as written; keep requirement seventeen exactly as written; keep requirement eighteen exactly as written; keep requirement nineteen exactly as written.",
+    "expected_status": "NEEDS_USER_INPUT",
+    "expect_constraint_budget_exceeded": true
+  }
+]

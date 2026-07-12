@@ -16,9 +16,14 @@ Prepare image-generation work without polluting the main Codex session.
 8. Create `prompt_core.txt` and `recreation_prompt.txt` as prompt layers for reuse and handoff.
 9. Create `chatgpt.final.txt` as optional handoff text.
 10. Create `human_checklist.md` for ordinary human review. Do not pretend automated taste QA replaces human judgment.
-11. Create `identity_lock.json` only when identity, product, UI, or brand preservation is needed.
+11. Create `identity_lock.json` only when identity, product, UI, brand, or style preservation is needed; use anchors appropriate to its scope.
 12. Create `metadata.json`.
-13. Return only short status, file paths, and recommendation.
+13. Preserve literal copy and labeled user constraints in the compiled prompt.
+14. Run `python3 scripts/validate_run.py imageops/runs/{run}`.
+15. Return only short status, file paths, and recommendation. Do not recommend rendering for a non-proceed status.
+16. Count prompt budget as lexical units: every CJK character is one unit and every Latin-script word/number is one unit; reject prompts or follow-ups over 190 units.
+17. Treat metadata hashes as unsigned content-integrity receipts, not malicious whole-run authentication.
+18. Leave real Codex Thread forward-test evidence to the parent orchestrator; never simulate it in local scripts.
 
 Use:
 

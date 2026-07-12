@@ -9,6 +9,7 @@
     "hero_subject",
     "aspect_ratio",
     "text_mode",
+    "literal_text",
     "must_show",
     "must_not_show",
     "hard_constraints",
@@ -27,6 +28,7 @@
       "type": "string",
       "enum": ["avoid_text", "headline_safe_only", "literal_copy", "short_readable_labels"]
     },
+    "literal_text": {"type": "array", "items": {"type": "string"}},
     "must_show": {"type": "array", "items": {"type": "string"}},
     "must_not_show": {"type": "array", "items": {"type": "string"}},
     "hard_constraints": {"type": "array", "items": {"type": "string"}},

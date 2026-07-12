@@ -46,6 +46,20 @@ Keep these fields in `visual_plan.json`, not as a final prompt checklist:
     "generation_intent": "..."
   },
   "style_tags": ["tag 1", "tag 2", "tag 3", "tag 4"],
+  "concept_candidates": [
+    {
+      "concept_id": "...",
+      "visual_solution": "...",
+      "why_it_fits": "...",
+      "first_read": "...",
+      "second_read": "...",
+      "text_risk": "low | medium | high",
+      "reference_risk": "low | medium | high",
+      "thumbnail_readability": "low | medium | high",
+      "selected": true
+    }
+  ],
+  "selected_concept_id": "...",
   "prompt_layers": {
     "prompt_core": "...",
     "recreation_prompt": "...",
@@ -54,7 +68,7 @@ Keep these fields in `visual_plan.json`, not as a final prompt checklist:
 }
 ```
 
-Use English artifact fields by default. Multilingual prompts are an export concern, not the core Codex workflow.
+Use English artifact fields by default. Multilingual prompts are an export concern, not the core Codex workflow. Concept candidates are internal planning evidence; they help choose one strong visual solution without defaulting to multiple renders.
 
 ## Prompt Shape
 
